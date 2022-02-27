@@ -1,0 +1,226 @@
+<ion-content [fullscreen]="true">
+  <div class="content-wrapper">
+
+    <div class="side-menu-wrapper">
+      <div class="card label-card">
+        <div class="card-header">
+          <ion-label class="card-heading">Select Features</ion-label>
+        </div>
+        <ion-radio-group [value]="selectedLayer" (ionChange)="selectLayer($event)">
+          <div class="card-item poi">
+            <ion-label class="item-label">Routes and Places</ion-label>
+            <ion-radio value="poi"></ion-radio>
+          </div>
+          <!-- <div class="card-item accessibility">
+            <ion-label class="item-label">Accessibility</ion-label>
+            <ion-radio value="accessibility"></ion-radio>
+          </div> -->
+          <div class="card-item safety">
+            <ion-label class="item-label">Road Safety</ion-label>
+            <ion-radio value="safety"></ion-radio>
+          </div>
+          <div class="card-item air">
+            <ion-label class="item-label">Air Quality</ion-label>
+            <ion-radio value="air"></ion-radio>
+          </div>
+          <div class="card-item wifi">
+            <ion-label class="item-label">Wifi Coverage</ion-label>
+            <ion-radio value="wifi"></ion-radio>
+          </div>
+        </ion-radio-group>
+
+      </div>
+
+      <div class="card route-card" *ngIf="poiLayerActive">
+        <div class="card-header">
+          <ion-label class="card-heading">Route</ion-label>
+        </div>
+
+        <form [formGroup]="routeForm">
+          <ion-input class="departure" placeholder="Start From" formControlName="start"></ion-input>
+          <ion-icon name="arrow-down-outline"></ion-icon>
+          <ion-select [value]="modeOfTransport" interface="popover" (ionChange)="selectModeOfTransport($event)">
+            <ion-select-option value="bike">
+              <ion-icon name="bicycle"></ion-icon>
+              Bike
+            </ion-select-option>
+            <ion-select-option value="car">Car</ion-select-option>
+            <ion-select-option value="foot">Foot</ion-select-option>
+          </ion-select>
+          <ion-icon name="arrow-down-outline"></ion-icon>
+          <ion-input class="arrival" placeholder="End at" formControlName="destination"></ion-input>
+          <ion-button class="btn-submit-route" color="primary" (click)="displayRoute()" [disabled]="!routeForm.valid">
+            Display Route
+          </ion-button>
+        </form>
+      </div>
+
+      <div class="card stats-card" *ngIf="!safetyLayerActive">
+        <div class="card-header">
+          <ion-label class="card-heading">Legend</ion-label>
+        </div>
+        <div class="legend poi" *ngIf="poiLayerActive">
+          <div class="legend-wrapper">
+            <ion-icon name="radio-button-off" style="color: orange;"></ion-icon>
+            <ion-label class="legend-label">Light injury</ion-label>
+          </div>
+          <div class="legend-wrapper">
+            <ion-icon name="radio-button-off" style="color: orangered;"></ion-icon>
+            <ion-label class="legend-label">Severe injury</ion-label>
+          </div>
+          <div class="legend-wrapper">
+            <ion-icon name="radio-button-off" style="color: red;"></ion-icon>
+            <ion-label class="legend-label">Death</ion-label>
+          </div>
+          <div class="legend-wrapper">
+            <ion-icon name="radio-button-off" style="color: deepskyblue;"></ion-icon>
+            <ion-label class="legend-label">Public Wifi</ion-label>
+          </div>
+        </div>
+        <div class="legend poi" *ngIf="accessibilityLayerActive">
+          <div class="legend-wrapper">
+            <ion-icon name="square" style="color: green;"></ion-icon>
+            <ion-label class="legend-label">Good access</ion-label>
+          </div>
+          <div class="legend-wrapper">
+            <ion-icon name="square" style="color: yellow;"></ion-icon>
+            <ion-label class="legend-label">Medium access</ion-label>
+          </div>
+          <div class="legend-wrapper">
+            <ion-icon name="square" style="color: red;"></ion-icon>
+            <ion-label class="legend-label">Bad/No access</ion-label>
+          </div>
+        </div>
+        <div class="legend poi" *ngIf="airLayerActive">
+          <div class="legend-wrapper">
+            <ion-icon name="square" style="color: green;"></ion-icon>
+            <ion-label class="legend-label">Good</ion-label>
+          </div>
+          <div class="legend-wrapper">
+            <ion-icon name="square" style="color: yellow;"></ion-icon>
+            <ion-label class="legend-label">Moderate</ion-label>
+          </div>
+          <div class="legend-wrapper">
+            <ion-icon name="square" style="color: red;"></ion-icon>
+            <ion-label class="legend-label">Unhealthy</ion-label>
+          </div>
+        </div>
+        <div class="legend" *ngIf="wifiLayerActive">
+          <div class="legend-wrapper">
+            <ion-icon name="radio-button-off" style="color: deepskyblue;"></ion-icon>
+            <ion-label class="legend-label">Public Wifi</ion-label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="header">
+      <ion-label class="header-heading">🗺️ AccuStat</ion-label>
+      <div class="search">
+        <form [formGroup]="placeForm" (keyup.enter)="showPlacePois()">
+          <ion-input placeholder="Enter a place ..." formControlName="place"></ion-input>
+          <ion-icon name="search-outline"></ion-icon>
+        </form>
+      </div>
+    </div>
+
+    <div class="map-wrapper">
+      <div id="wifiMap" [class.map]="wifiLayerActive" [class.hide-map]="!wifiLayerActive"></div>
+    </div>
+
+    <div class="map-wrapper">
+      <div id="accessibilityMap" [class.map]="accessibilityLayerActive"
+           [class.hide-map]="!accessibilityLayerActive"></div>
+    </div>
+
+    <div class="map-wrapper">
+      <div id="airMap" [class.map]="airLayerActive" [class.hide-map]="!airLayerActive"></div>
+    </div>
+
+    <div class="map-wrapper">
+      <div id="poiMap" [class.map]="poiLayerActive" [class.hide-map]="!poiLayerActive"></div>
+    </div>
+
+    <div class="map-wrapper">
+      <iframe
+        src="https://unfallatlas.statistikportal.de/?BL=DE&Jhr=2020&Beteiligung=Personenschaden&scl=144448&E=689111&N=5336664"
+        scrolling='no' [class.map]="safetyLayerActive" [class.hide-map]="!safetyLayerActive"></iframe>
+    </div>
+
+    <div class="floating-container"
+         *ngIf="!safetyLayerActive && (placeActive || routeActive || wifiLayerActive || accessibilityLayerActive || (airLayerActive &&selectedAQI != null))">
+      <div class="card-header">
+        <ion-label class="card-heading">Stats</ion-label>
+      </div>
+      <div class="legend poi" *ngIf="poiLayerActive">
+        <div class="legend-wrapper" *ngIf="routeActive">
+          <ion-label class="legend-label">Distance:</ion-label>
+          <ion-label class="legend-value">{{this.routeDistanceStat}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="routeActive">
+          <ion-label class="legend-label">Duration:</ion-label>
+          <ion-label class="legend-value">{{this.routeDurationStat}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="routeActive ||placeActive">
+          <ion-label class="legend-label">Light injuries:</ion-label>
+          <ion-label class="legend-value">{{this.poiLightInjuryStat}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="routeActive ||placeActive">
+          <ion-label class="legend-label">Severe injuries:</ion-label>
+          <ion-label class="legend-value">{{this.poiSevereInjuryStat}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="routeActive ||placeActive">
+          <ion-label class="legend-label">Deaths:</ion-label>
+          <ion-label class="legend-value">{{this.poiDeathStat}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="routeActive">
+          <ion-label class="legend-label">Safety Score:</ion-label>
+          <ion-label class="legend-value">{{this.routeSafetyStat | number:"1.0-2"}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="routeActive || placeActive">
+          <ion-label class="legend-label">Wifi hotspots nearby:</ion-label>
+          <ion-label class="legend-value">{{this.poiWifiStat}}</ion-label>
+        </div>
+      </div>
+      <div class="legend poi" *ngIf="wifiLayerActive">
+        <div class="legend-wrapper">
+          <ion-label class="legend-label">Total count:</ion-label>
+          <ion-label class="legend-value">{{this.wifiStat}}</ion-label>
+        </div>
+      </div>
+      <div class="legend poi" *ngIf="accessibilityLayerActive">
+        <div class="legend-wrapper">
+          <ion-label class="legend-label">Duration to centre:</ion-label>
+          <ion-label class="legend-value">{{this.accessibilityStat}}</ion-label>
+        </div>
+      </div>
+      <div class="legend poi" *ngIf="airLayerActive">
+        <div class="legend-wrapper" *ngIf="this.selectedAQI != null">
+          <ion-label class="legend-label">Location:</ion-label>
+          <ion-label class="legend-value">{{this.selectedAQI['name']}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="pm25Active">
+          <ion-label class="legend-label">PM25:</ion-label>
+          <ion-label class="legend-value">{{this.selectedAQI['pm25']}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="pm10Active">
+          <ion-label class="legend-label">PM10:</ion-label>
+          <ion-label class="legend-value">{{this.selectedAQI['pm10']}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="pm1Active">
+          <ion-label class="legend-label">PM1:</ion-label>
+          <ion-label class="legend-value">{{this.selectedAQI['pm1']}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="o3Active">
+          <ion-label class="legend-label">O3:</ion-label>
+          <ion-label class="legend-value">{{this.selectedAQI['o3']}}</ion-label>
+        </div>
+        <div class="legend-wrapper" *ngIf="no2Active">
+          <ion-label class="legend-label">NO2:</ion-label>
+          <ion-label class="legend-value">{{this.selectedAQI['no2']}}</ion-label>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
